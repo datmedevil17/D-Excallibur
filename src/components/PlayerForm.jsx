@@ -69,7 +69,8 @@ export const PlayerProfileForm = ({ onSubmit }) => {
 
   return (
     <>
-      <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
+      {/* <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative"> */}
+      <div className="h-[95vh] md:h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
         <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
         <div className="absolute left-4 top-4 z-10 ">
           <button
