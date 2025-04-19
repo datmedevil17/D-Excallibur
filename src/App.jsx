@@ -24,11 +24,11 @@ function App() {
     setIsGameStarted(true);
   };
 
-  const xpChange = (kill,death,xp,id) => {
+  const xpChange = (kill, death, xp, id) => {
     setKill(kill);
     setDeath(death);
     setXp(xp);
-    // api call to update db
+    // API call to update DB can be placed here
     setIsXpChange(true);
     setIsGameStarted(false);
   };
@@ -42,12 +42,27 @@ function App() {
     window.location.reload();
   };
 
+  if (isXpChange) {
+    return (
+      <>
+        <ToastContainer position="top-center" autoClose={3000} />
+        <XpChangeScreen
+          kill={kill}
+          death={death}
+          xp={xp}
+          token={playerData?.token}
+          onBack={onBack}
+        />
+      </>
+    );
+  }
+
   return (
     <>
-    <ToastContainer position="top-center" autoClose={3000} />
-    {isXpChange ?(<XpChangeScreen kill ={kill} death={death} xp={xp} token = {playerData?.token} onBack={onBack}/>):(<></>)}
+      <ToastContainer position="top-center" autoClose={3000} />
       <Loader />
-      {!isGameStarted ?(<></>):(<Leaderboard />)}
+      {isGameStarted && <Leaderboard />}
+
       {!isGameStarted ? (
         <PlayerProfileForm onSubmit={handleProfileSubmit} />
       ) : (
@@ -65,7 +80,7 @@ function App() {
             <Physics>
               <Experience
                 downgradedPerformance={downgradedPerformance}
-                playerData={playerData} 
+                playerData={playerData}
                 xpChange={xpChange}
               />
             </Physics>

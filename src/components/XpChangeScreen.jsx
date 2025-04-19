@@ -9,7 +9,7 @@ export const XpChangeScreen = ({ kill, death, xp,token, onBack }) => {
     };
   
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-51">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Match Summary</h2>
           <div className="space-y-2 text-gray-600">

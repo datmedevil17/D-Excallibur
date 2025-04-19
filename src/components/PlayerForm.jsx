@@ -12,18 +12,22 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   const [color, setColor] = useState("black");
   const [formData, setFormData] = useState({
     name: "Player 1",
-    address: "",
+    address: "temp",
     weapon: "AK",
     color: "blue",
     photo:
       "https://cdn.pixabay.com/photo/2023/05/08/09/33/cat-7978052_1280.jpg",
-    xp: "5000",
-    token: "5000",
-    roomCode: "Castl",
-    level: "89",
-    rank: "Champion IV",
+    xp: "195",
+    token: "0",
+    roomCode: "",
+    league: "major",
   });
-  useEffect(() => {}, []);
+  const getRank = (xp) => {
+    if (xp < 100) return "private";
+    if (xp < 200) return "corporal";
+    if (xp < 300) return "sergeant";
+    return "major";
+  };
   const [editMode, setEditMode] = useState(false);
 
   const handlePlay = () => {
@@ -33,9 +37,19 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       });
       return;
     }
-
-    console.log("Joining room:", roomCode);
+  
+    const updatedData = {
+      ...formData,
+      roomCode: roomCode,
+      league: getRank(formData.xp),
+      weapon: gun,
+      color: color,
+    };
+  
+    setFormData(updatedData);
+    onSubmit(updatedData);  
   };
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,62 +58,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-    setEditMode(false);
   };
 
   return (
     <>
-      {/* Top Bar */}
-      {/* <div className="flex justify-between items-center p-4 bg-black bg-opacity-30 rounded-2xl backdrop-blur-sm shadow-lg">
-        <div className="flex items-center space-x-4">
-          <img
-            src={formData.photo || "/avatar.png"}
-            alt="Avatar"
-            className="w-12 h-12 rounded-full border-2 border-white border-opacity-50"
-          />
-          <div className="space-y-1">
-            {editMode ? (
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="text-lg font-bold tracking-wide bg-transparent border-b border-white"
-              />
-            ) : (
-              <div className="text-lg font-bold tracking-wide">
-                {formData.name}
-              </div>
-            )}
-            <div className="text-xs bg-blue-600 bg-opacity-80 px-3 py-1 rounded-full w-fit">
-              LV {formData.level}
-            </div>
-          </div>
-        </div>
-        <div className="flex space-x-4 items-center">
-          <div className="text-sm font-bold bg-gradient-to-r from-yellow-500 to-yellow-400 px-4 py-1.5 rounded-full shadow-md">
-            {formData.rank}
-          </div>
-          <button className="bg-purple-600 p-2 rounded-lg hover:bg-purple-700 transition-all">
-            <span className="text-lg">🎁</span>
-          </button>
-          <div className="flex items-center space-x-2 bg-black bg-opacity-30 px-3 py-1.5 rounded-full">
-            <span className="text-yellow-300">🪙</span>
-            <span className="text-sm">{formData.xp}</span>
-          </div>
-          <div className="flex items-center space-x-2 bg-black bg-opacity-30 px-3 py-1.5 rounded-full">
-            <span className="text-blue-300">💎</span>
-            <span className="text-sm">{formData.token}</span>
-          </div>
-          <button
-            onClick={toggleEditMode}
-            className="p-2 hover:bg-white hover:bg-opacity-10 rounded-lg transition-all"
-          >
-            ⚙️
-          </button>
-        </div>
-      </div> */}
-  
-      {/* Main Content */}
       <div className="h-screen bg-[url('./bg.png')] bg-cover bg-center bg-no-repeat relative">
         <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
         <div className="absolute left-4 top-4 z-10 ">
@@ -226,20 +188,6 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           </button>
         </div>
       </div>
-
-      {/* Bottom Bar */}
-      {/* <div className="flex justify-between items-center mt-8 px-8">
-        <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-6 py-3 rounded-xl text-sm font-medium shadow-lg">
-          ROOM: {formData.roomCode}
-        </div>
-        <button
-          onClick={() => setEditMode(false)}
-          className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black px-8 py-3 text-lg font-bold rounded-2xl shadow-xl transform hover:scale-105 transition-all"
-        >
-          FIGHT NOW
-        </button>
-      </div> */}
-
       {/* Edit Form (shown only in edit mode) */}
       {editMode && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
