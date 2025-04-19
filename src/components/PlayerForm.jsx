@@ -177,7 +177,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             placeholder="ABCDE"
             value={roomCode}
             onChange={(e) => setRoomCode(e.target.value)}
-            className="rounded-lg"
+            className="rounded-lg bg-yellow-400"
           />
 
           <button
