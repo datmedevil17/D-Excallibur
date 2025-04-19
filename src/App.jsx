@@ -23,7 +23,6 @@ function App() {
     setIsXpChange(false);
     setIsGameStarted(true);
   };
-
   const xpChange = (kill, death, xp, id) => {
     setKill(kill);
     setDeath(death);
