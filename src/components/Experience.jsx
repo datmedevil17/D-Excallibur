@@ -14,7 +14,7 @@ import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
 import { Map } from "./Map";
 
-export const Experience = ({ downgradedPerformance = false, playerData }) => {
+export const Experience = ({ downgradedPerformance = false, playerData,xpChange }) => {
   const [playersMap, setPlayersMap] = useState({});
   const weaponStats = Stats.find((item) => item.type === playerData.weapon);
 
@@ -24,12 +24,17 @@ export const Experience = ({ downgradedPerformance = false, playerData }) => {
   }
 
   const { FIRE_RATE, BULLET_SPEED, DAMAGE, MOVEMENT_SPEED } = weaponStats;
-
+  const getRank = (xp) => {
+    if (xp < 100) return "private";
+    if (xp < 200) return "corporal";
+    if (xp < 300) return "sergeant";
+    return "major";
+  };
   useEffect(() => {
     onPlayerJoin((state) => {
       const joystick = new Joystick(state, {
         type: "angular",
-        buttons: [{ id: "fire", label: "Fire" }],
+        buttons: [{ id: "fire", label: "Fire" },{ id: "quit", label: "Quit" }],
       });
 
       // Initialize core stats
@@ -43,7 +48,7 @@ export const Experience = ({ downgradedPerformance = false, playerData }) => {
           address: playerData.address,
           weapon: playerData.weapon,
           color: playerData.color,
-          league: playerData.league,
+          league: getRank(playerData.xp),
           photo: playerData.photo,
           xp: playerData.xp,
           roomCode: playerData.roomCode,
@@ -79,6 +84,9 @@ export const Experience = ({ downgradedPerformance = false, playerData }) => {
   const [networkHits, setNetworkHits] = useMultiplayerState("hits", []);
 
   const onFire = (bullet) => setBullets((b) => [...b, bullet]);
+  const onQuit = (kill,death,xp,id) => {
+    xpChange(kill,death,xp,id);
+  };
   const onHit = (id, position) => {
     setBullets((b) => b.filter((x) => x.id !== id));
     setHits((h) => [...h, { id, position }]);
@@ -114,6 +122,7 @@ export const Experience = ({ downgradedPerformance = false, playerData }) => {
           userPlayer={state.id === localId}
           joystick={joystick}
           onFire={onFire}
+          onQuit={onQuit}
           onKilled={onKilled}
           downgradedPerformance={downgradedPerformance}
           FIRE_RATE={FIRE_RATE}

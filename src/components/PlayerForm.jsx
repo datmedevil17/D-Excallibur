@@ -6,7 +6,6 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     address: "",
     weapon: "",
     color: "",
-    league: "",
     photo: "",
     xp :"",
     token : "",
@@ -57,12 +56,6 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         name="color"
         placeholder="Favorite Color"
         value={formData.color}
-        onChange={handleChange}
-      />
-      <input
-        name="league"
-        placeholder="League"
-        value={formData.league}
         onChange={handleChange}
       />
       <input

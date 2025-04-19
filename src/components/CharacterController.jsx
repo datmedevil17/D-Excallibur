@@ -1,7 +1,7 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
-import { isHost } from "playroomkit";
+import { isHost, myPlayer } from "playroomkit";
 import { useEffect, useRef, useState } from "react";
 import { TextureLoader } from "three";
 import { CharacterSoldier } from "./CharacterSoldier";
@@ -18,12 +18,14 @@ export const CharacterController = ({
   userPlayer,
   onKilled,
   onFire,
+  onQuit,
   downgradedPerformance,
   FIRE_RATE,
   MOVEMENT_SPEED,
   ...props
 }) => {
   const group = useRef();
+  const quitHandled = useRef(false);
   const character = useRef();
   const rigidbody = useRef();
   const [animation, setAnimation] = useState("Idle");
@@ -125,6 +127,21 @@ export const CharacterController = ({
         }
       }
     }
+
+    if (joystick.isPressed("quit")) {
+      if (!quitHandled.current) {
+        quitHandled.current = true;
+        if (isHost()) {
+          const death = state.state.deaths;
+          const kill = state.state.kills;
+          const xp = state.state.profile2.xp;
+          onQuit(kill,death,xp,state.id);
+        }
+      }
+    } else {
+      quitHandled.current = false;
+    }
+    
 
     if (isHost()) {
       state.setState("pos", rigidbody.current.translation());
