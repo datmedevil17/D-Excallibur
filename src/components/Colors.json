@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Black",
+    "type": "black",
+    "imgUrl": "./colors/black.png"
+  },
+  {
+    "name": "Green",
+    "type": "green",
+    "imgUrl": "./colors/black.png"
+  },
+  {
+    "name": "Red",
+    "type": "red",
+    "imgUrl": "./colors/black.png"
+  },
+  {
+    "name": "Blue",
+    "type": "blue",
+    "imgUrl": "./colors/black.png"
+  },
+  {
+    "name": "Purple",
+    "type": "purple",
+    "imgUrl": "./colors/black.png"
+  }
+]

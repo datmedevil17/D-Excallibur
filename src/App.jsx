@@ -2,7 +2,7 @@ import { Loader, PerformanceMonitor, SoftShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Physics } from "@react-three/rapier";
-import { useMultiplayerState } from "playroomkit";
+import { ToastContainer } from 'react-toastify';
 import { Suspense, useState } from "react";
 import { Experience } from "./components/Experience";
 import { Leaderboard } from "./components/Leaderboard";
@@ -44,6 +44,7 @@ function App() {
 
   return (
     <>
+    <ToastContainer position="top-center" autoClose={3000} />
     {isXpChange ?(<XpChangeScreen kill ={kill} death={death} xp={xp} token = {playerData?.token} onBack={onBack}/>):(<></>)}
       <Loader />
       {!isGameStarted ?(<></>):(<Leaderboard />)}
