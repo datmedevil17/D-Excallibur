@@ -98,9 +98,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           </button>
         </div>
       </div> */}
-
+  
       {/* Main Content */}
-      <div className="h-screen bg-gradient-to-br from-blue-800 via-purple-800 to-red-800 relative ">
+      <div className="h-screen bg-[url('./bg.png')] bg-cover bg-center bg-no-repeat relative">
+        <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
         <div className="absolute left-4 top-4 z-10 ">
           <button
             onClick={() => console.log("hi")}
@@ -112,7 +113,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
             vertical
-            className="bg-[rgba(0,0,0,0.2)]"
+            className="bg-[rgba(0,0,0,0.5)]"
             options={[
               ...Colors.map((color) => ({
                 label: (
@@ -160,7 +161,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         <div className="absolute right-0 md:right-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[25vw] mx-2">
           <Segmented
             vertical
-            className="bg-[rgba(0,0,0,0.2)]"
+            className="bg-[rgba(0,0,0,0.5)]"
             options={[
               ...Stats.map((gun) => ({
                 label: (
