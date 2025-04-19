@@ -28,8 +28,15 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     if (xp < 300) return "sergeant";
     return "major";
   };
+  useEffect(()=>{
+    setRoomCode(window.location.hash.substring(4));
+    const updatedData = {
+      ...formData,
+      roomCode:window.location.hash.substring(4),
+    };
+    setFormData(updatedData);
+  },[])
   const [editMode, setEditMode] = useState(false);
-
   const handlePlay = () => {
     if (!roomCode.trim()) {
       toast.error("Please enter a Room Code to join or create a game.", {
@@ -37,7 +44,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       });
       return;
     }
-  
+    window.location.hash = "r=a"+roomCode;
     const updatedData = {
       ...formData,
       roomCode: roomCode,
