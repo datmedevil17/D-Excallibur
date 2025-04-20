@@ -50,7 +50,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       });
       return;
     }
-    window.location.hash = "r=a"+roomCode;
+    window.location.hash = "r=R"+roomCode.toUpperCase();
     const updatedData = {
       ...formData,
       roomCode: roomCode,
