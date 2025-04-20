@@ -27,7 +27,6 @@ function App() {
     setKill(kill);
     setDeath(death);
     setXp(xp);
-    // API call to update DB can be placed here
     setIsXpChange(true);
     setIsGameStarted(false);
   };

@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import { CharacterShowcase } from "./CharacterShowcase";
 import Stats from "./Stats.json";
 import Colors from "./Colors.json";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useConnect } from "wagmi";
 
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
@@ -22,6 +24,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     roomCode: "",
     league: "major",
   });
+  const account = useAccount()
+  if(account.isConnected){
+    console.log(account.address)
+  }
   const getRank = (xp) => {
     if (xp < 100) return "private";
     if (xp < 200) return "corporal";
@@ -72,12 +78,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
         <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
         <div className="absolute left-4 top-4 z-10 ">
-          <button
-            onClick={() => console.log("hi")}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-semibold shadow-md hover:from-purple-700 hover:to-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-400"
-          >
-            Connect to Wallet
-          </button>
+         <ConnectButton/>
         </div>
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
