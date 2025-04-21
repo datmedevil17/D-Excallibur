@@ -8,6 +8,7 @@ import Colors from "./Colors.json";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useConnect } from "wagmi";
 import { getXTokenBalance } from "../contracts/function";
+import { formatEther } from 'viem';
 
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
@@ -25,10 +26,25 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     roomCode: "",
     league: "major",
   });
-  const account = useAccount()
-  if(account.isConnected){
-    console.log(account.address)
-  }
+  const [userBalance, setUserBalance] = useState("0");
+  const { address, isConnected } = useAccount();
+  const { connect, connectors, isLoading, pendingConnector } = useConnect({
+    onSuccess: async (data) => {
+      const address = data.accounts[0];
+      try {
+        const balance = await getXTokenBalance(address);
+        setUserBalance(formatEther(balance));
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    }
+  });
+
+  const formatAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   const getRank = (xp) => {
     if (xp < 100) return "private";
     if (xp < 200) return "corporal";
@@ -73,16 +89,41 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     e.preventDefault();
     onSubmit(formData);
   };
-  const {connect} = useConnect()
 
   return (
     <>
       <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
         <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
-        <div className="absolute left-4 top-4 z-10 ">
-        <button onClick={() => connect({ connector: injected() })}>
-      Connect
-    </button>
+        <div className="absolute left-4 top-4 z-10">
+          {!isConnected ? (
+            <div className="flex flex-col gap-2">
+              {connectors.map((connector) => (
+                <button
+                  key={connector.id}
+                  onClick={() => connect({ connector })}
+                  className={`
+                    px-4 py-2 rounded-lg
+                    ${isLoading && connector.id === pendingConnector?.id
+                      ? 'bg-gray-600'
+                      : 'bg-blue-600 hover:bg-blue-700'}
+                    text-white font-semibold transition-all
+                    flex items-center justify-center min-w-[160px]
+                  `}
+                  disabled={!connector.ready || isLoading}
+                >
+                  {isLoading && connector.id === pendingConnector?.id 
+                    ? 'Connecting...'
+                    : 'Connect Wallet'
+                  }
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-[rgba(0,0,0,0.5)] p-3 rounded-lg text-white">
+              <p className="font-medium">Address: {formatAddress(address)}</p>
+              <p className="font-medium">Balance: {userBalance} XTK</p>
+            </div>
+          )}
         </div>
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
