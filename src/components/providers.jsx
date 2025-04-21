@@ -18,10 +18,10 @@ import {
 } from "@tanstack/react-query";
 
 
-const config = getDefaultConfig({
+export const config = getDefaultConfig({
   appName: 'Excallibur',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [mainnet, polygon, optimism, arbitrum, base],
+  chains: [mainnet, polygon, optimism, arbitrum, base,monadTestnet],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 

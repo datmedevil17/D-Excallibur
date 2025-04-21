@@ -7,6 +7,7 @@ import Stats from "./Stats.json";
 import Colors from "./Colors.json";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useConnect } from "wagmi";
+import { getXTokenBalance } from "../contracts/function";
 
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
@@ -72,13 +73,16 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     e.preventDefault();
     onSubmit(formData);
   };
+  const {connect} = useConnect()
 
   return (
     <>
       <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
         <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
         <div className="absolute left-4 top-4 z-10 ">
-         <ConnectButton/>
+        <button onClick={() => connect({ connector: injected() })}>
+      Connect
+    </button>
         </div>
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
