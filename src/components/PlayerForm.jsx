@@ -1,4 +1,4 @@
-import { ShoppingCartOutlined } from "@ant-design/icons";
+import { LockOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { Avatar, Input, Segmented } from "antd";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -14,6 +14,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
   const [gun, setGun] = useState("Revolver");
   const [color, setColor] = useState("black");
+  const [colorId, setColorId] = useState("black");
+  const [gunId, setGunId] = useState("black");
+  const [playerColor, setPlayerColor] = useState([1, 3, 4]);
+  const [playerGun, setPlayerGun] = useState([1, 3, 4]);
   const [formData, setFormData] = useState({
     name: "Player 1",
     address: "temp",
@@ -51,14 +55,19 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     if (xp < 300) return "sergeant";
     return "major";
   };
-  useEffect(()=>{
+  useEffect(() => {
     setRoomCode(window.location.hash.substring(4));
     const updatedData = {
       ...formData,
-      roomCode:window.location.hash.substring(4),
+      roomCode: window.location.hash.substring(4),
     };
     setFormData(updatedData);
-  },[])
+  }, []);
+  const errorClick = () =>{
+    toast.error("Please purchase locked items before playing.", {
+        position: "top-center",
+      });
+  }
   const [editMode, setEditMode] = useState(false);
   const handlePlay = () => {
     if (!roomCode.trim()) {
@@ -67,7 +76,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       });
       return;
     }
-    window.location.hash = "r=R"+roomCode.toUpperCase();
+    window.location.hash = "r=R" + roomCode.toUpperCase();
     const updatedData = {
       ...formData,
       roomCode: roomCode,
@@ -75,11 +84,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       weapon: gun,
       color: color,
     };
-  
+
     setFormData(updatedData);
-    onSubmit(updatedData);  
+    onSubmit(updatedData);
   };
-  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -90,10 +98,28 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     onSubmit(formData);
   };
 
+  useEffect(() => {
+    const selectedColor = Colors.find((c) => c.type === color);
+    if (selectedColor) {
+      setColorId(selectedColor.id);
+    }
+  }, [color]);
+
+  useEffect(() => {
+    const selectedGun = Stats.find((c) => c.type === gun);
+    if (selectedGun) {
+      setGunId(selectedGun.id);
+    }
+  }, [gun]);
+
   return (
     <>
       <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
-        <img src="./logo.PNG" className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]" width={"700px"}/>
+        <img
+          src="./logo.PNG"
+          className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]"
+          width={"700px"}
+        />
         <div className="absolute left-4 top-4 z-10">
           {!isConnected ? (
             <div className="flex flex-col gap-2">
@@ -128,7 +154,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
             vertical
-            className="bg-[rgba(0,0,0,0.5)]"
+            className="bg-[rgba(0,0,0,0.5)] p-1"
             options={[
               ...Colors.map((color) => ({
                 label: (
@@ -138,34 +164,18 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                       shape="square"
                       style={{ width: "100%", height: "100%" }}
                     />
+                    {!playerColor.includes(color.id) && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-md">
+                        <LockOutlined className="text-white text-xl" />
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-xs text-white px-1 font-bold">
                       {color.name}
                     </div>
                   </div>
                 ),
                 value: color.type,
-              })),
-              {
-                label: (
-                  <button
-                    onClick={() => {
-                      console.log("Open skin shop");
-                    }}
-                    className="p-1 sm:p-2"
-                  >
-                    <Avatar
-                      size={{
-                        xs: 32,
-                        sm: 40,
-                        md: 64,
-                      }}
-                      className="bg-[rgba(0,0,0,0.5)]"
-                      icon={<ShoppingCartOutlined />}
-                    />
-                  </button>
-                ),
-                value: "shop",
-              },
+              }))
             ]}
             value={color}
             onChange={(value) => setColor(value)}
@@ -176,7 +186,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         <div className="absolute right-0 md:right-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[25vw] mx-2">
           <Segmented
             vertical
-            className="bg-[rgba(0,0,0,0.5)]"
+            className="bg-[rgba(0,0,0,0.5)] p-1"
             options={[
               ...Stats.map((gun) => ({
                 label: (
@@ -186,34 +196,18 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                       shape="square"
                       style={{ width: "100%", height: "100%" }}
                     />
+                    {!playerGun.includes(gun.id) && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-md">
+                        <LockOutlined className="text-white text-xl" />
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-xs text-white px-1 font-bold">
                       {gun.name}
                     </div>
                   </div>
                 ),
                 value: gun.type,
-              })),
-              {
-                label: (
-                  <button
-                    onClick={() => {
-                      console.log("Open weapon shop");
-                    }}
-                    className="p-1 sm:p-2"
-                  >
-                    <Avatar
-                      size={{
-                        xs: 32,
-                        sm: 40,
-                        md: 64,
-                      }}
-                      className="bg-[rgba(0,0,0,0.5)]"
-                      icon={<ShoppingCartOutlined />}
-                    />
-                  </button>
-                ),
-                value: "shop",
-              },
+              }))
             ]}
             value={gun}
             onChange={(value) => setGun(value)}
@@ -232,13 +226,18 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             onChange={(e) => setRoomCode(e.target.value)}
             className="rounded-lg bg-yellow-400"
           />
-
-          <button
-            onClick={handlePlay}
-            className="mt-2 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg"
-          >
-            Play Game
-          </button>
+          {playerColor.includes(colorId) && playerGun.includes(gunId)? (
+            <button
+              onClick={handlePlay}
+              className="mt-2 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg"
+            >
+              Play Game
+            </button>
+          ) : (
+            <button className="mt-2 bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-inner opacity-60 " onClick={errorClick}>
+              Play Game
+            </button>
+          )}
         </div>
       </div>
       {/* Edit Form (shown only in edit mode) */}

@@ -2,26 +2,36 @@
   {
     "name": "Black",
     "type": "black",
-    "imgUrl": "./colors/black.png"
+    "imgUrl": "./colors/black.png",
+    "id" : 1,
+    "price" : 5
   },
   {
     "name": "Green",
     "type": "green",
-    "imgUrl": "./colors/black.png"
+    "imgUrl": "./colors/black.png",
+    "id" : 2,
+    "price" : 5
   },
   {
     "name": "Red",
     "type": "red",
-    "imgUrl": "./colors/black.png"
+    "imgUrl": "./colors/black.png",
+    "id" : 3,
+    "price" : 5
   },
   {
     "name": "Blue",
     "type": "blue",
-    "imgUrl": "./colors/black.png"
+    "imgUrl": "./colors/black.png",
+    "id" : 4,
+    "price" : 5
   },
   {
     "name": "Purple",
     "type": "purple",
-    "imgUrl": "./colors/black.png"
+    "imgUrl": "./colors/black.png",
+    "id" : 5,
+    "price" : 5
   }
 ]
