@@ -123,7 +123,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           width={"700px"}
         />
         <div className="absolute left-4 top-4 z-10">
-          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-lg w-[215px] md:w-[300px]">
+          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-lg w-[190px] md:w-[300px]">
             <div
               className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
               onClick={() => setIsEdit(!isEdit)}
@@ -153,11 +153,11 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               }}
             />
             <div className="flex-1 text-white">
-              <div className="flex items-center justify-between w-[150px] md:w-[200px]">
+              <div className="flex items-center justify-between w-[120px] md:w-[200px]">
                 <div className="text-md md:text-lg">Akshat</div>
                 <div className="font-semibold text-xs">address</div>
               </div>
-              <div className="flex items-center space-x-1 md:space-x-2 w-[150px] md:w-[200px]">
+              <div className="flex items-center space-x-1 md:space-x-2 w-[120px] md:w-[200px]">
                 <img
                   src={`/ranks/${getRank(formData.xp)}.png`}
                   alt="League"

@@ -7,6 +7,7 @@
     "DAMAGE": 18,
     "MOVEMENT_SPEED": 202,
     "imgUrl": "./guns/gun1.png",
+    "price" : 100,
     "id": 1
   },
   {
@@ -17,6 +18,7 @@
     "DAMAGE": 15,
     "MOVEMENT_SPEED": 202,
     "imgUrl": "./guns/gun1.png",
+    "price" : 100,
     "id": 2
   },
   {
@@ -27,6 +29,7 @@
     "DAMAGE": 10,
     "MOVEMENT_SPEED": 202,
     "imgUrl": "./guns/gun1.png",
+    "price" : 100,
     "id": 3
   },
   {
@@ -37,6 +40,7 @@
     "DAMAGE": 50,
     "MOVEMENT_SPEED": 202,
     "imgUrl": "./guns/gun1.png",
+    "price" : 100,
     "id": 4
   },
   {
@@ -47,6 +51,7 @@
     "DAMAGE": 70,
     "MOVEMENT_SPEED": 202,
     "imgUrl": "./guns/gun1.png",
+    "price" : 100,
     "id": 5
   }
 ]
