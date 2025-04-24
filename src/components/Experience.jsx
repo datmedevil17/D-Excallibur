@@ -37,7 +37,6 @@ export const Experience = ({ downgradedPerformance = false, playerData,xpChange 
         buttons: [{ id: "fire", label: "Fire" },{ id: "quit", label: "Quit" }],
       });
 
-      // Initialize core stats
       state.setState("health", 100);
       state.setState("deaths", 0);
       state.setState("kills", 0);

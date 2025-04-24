@@ -22,13 +22,13 @@ export const Leaderboard = () => {
                 {player.state.profile2?.name}
               </h2>
               <div className="flex text-sm items-center gap-4">
-              {player.state.profile2?.league && (
-            <img
-              src={`/ranks/${player.state.profile2.league.toLowerCase()}.png`}
-              alt="league"
-              className="w-4 h-4"
-            />
-          )}
+                {player.state.profile2?.league && (
+                  <img
+                    src={`/ranks/${player.state.profile2.league.toLowerCase()}.png`}
+                    alt="league"
+                    className="w-4 h-4"
+                  />
+                )}
                 <p>🔫 {player.state.kills}</p>
                 <p>💀 {player.state.deaths}</p>
               </div>

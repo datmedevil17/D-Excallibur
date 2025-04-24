@@ -1,4 +1,4 @@
-import { LockOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { LockOutlined } from "@ant-design/icons";
 import { Avatar, Input, Segmented } from "antd";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -9,12 +9,14 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useConnect } from "wagmi";
 import { getXTokenBalance } from "../contracts/function";
 import { formatEther } from "viem";
+import { EditProfile } from "./EditProfile";
 
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
   const [gun, setGun] = useState("Revolver");
   const [color, setColor] = useState("black");
   const [colorId, setColorId] = useState(1);
+  const [isEdit, setIsEdit] = useState(false);
   const [gunId, setGunId] = useState(1);
   const [playerColors, setPlayerColors] = useState([1, 3, 4]);
   const [playerGuns, setPlayerGuns] = useState([1, 3, 4]);
@@ -120,8 +122,27 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]"
           width={"700px"}
         />
-        {/* <div className="absolute left-4 top-4 z-10">
-          <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg w-[320px]">
+        <div className="absolute left-4 top-4 z-10">
+          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg w-[320px]">
+            <div
+              className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
+              onClick={() => setIsEdit(!isEdit)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"
+                />
+              </svg>
+            </div>
             <img
               src={`/ranks/${getRank(formData.xp)}.png`}
               alt="Player"
@@ -132,7 +153,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               }}
             />
             <div className="flex-1">
-              <div className="flex gap-5 items-center"><div className="text-white text-lg">Akshat</div><div className="text-white font-semibold text-xs">address</div></div>
+              <div className="flex gap-5 items-center">
+                <div className="text-white text-lg">Akshat</div>
+                <div className="text-white font-semibold text-xs">address</div>
+              </div>
               <div className="flex items-center space-x-2 mt-2">
                 <img
                   src={`/ranks/${getRank(formData.xp)}.png`}
@@ -151,9 +175,9 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               </div>
             </div>
           </div>
-        </div> */}
+        </div>
 
-        <div className="absolute left-4 top-4 z-10">
+        {/* <div className="absolute left-4 top-4 z-10">
           {!isConnected ? (
             <div className="flex flex-col gap-2">
               {connectors.map((connector) => (
@@ -184,7 +208,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               <p className="font-medium">Balance: {userBalance} XTK</p>
             </div>
           )}
-        </div>
+        </div> */}
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
             vertical
@@ -217,6 +241,12 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         </div>
 
         <CharacterShowcase weapon={gun} key={gun + color} color={color} />
+
+        {isEdit && (
+          <>
+            <EditProfile onBack={()=>{setIsEdit(false)}}/>
+          </>
+        )}
         <div className="absolute right-0 md:right-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[25vw] mx-2">
           <Segmented
             vertical
