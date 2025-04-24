@@ -123,7 +123,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           width={"700px"}
         />
         <div className="absolute left-4 top-4 z-10">
-          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg w-[320px]">
+          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg w-[300px]">
             <div
               className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
               onClick={() => setIsEdit(!isEdit)}
@@ -279,16 +279,15 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         </div>
 
         <div className="absolute right-4 bottom-4 z-10 flex flex-col ">
-          <div className="text-sm text-gray-300">
-            Enter Room Code to Join / Create
+          <div className="md:text-sm text-gray-300 text-xs">
+            Enter Code to Join/Create
           </div>
-
           <Input
             addonBefore="R"
             placeholder="ABCDE"
             value={roomCode}
             onChange={(e) => setRoomCode(e.target.value)}
-            className="rounded-lg bg-yellow-400"
+            className="rounded-lg bg-yellow-400 text-md md:text-lg"
           />
           {playerColors.includes(colorId) && playerGuns.includes(gunId) ? (
             <button
