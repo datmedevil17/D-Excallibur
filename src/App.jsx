@@ -56,7 +56,7 @@ function App() {
   }
 
   return (
-    <div className="h-full">
+    <div className="h-[1000px]">
       <ToastContainer position="top-center" autoClose={3000} />
       <Loader />
       {isGameStarted && <Leaderboard />}
