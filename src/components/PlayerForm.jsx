@@ -123,14 +123,14 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           width={"700px"}
         />
         <div className="absolute left-4 top-4 z-10">
-          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg w-[300px]">
+          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-lg w-[215px] md:w-[300px]">
             <div
               className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
               onClick={() => setIsEdit(!isEdit)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
+                className="md:h-5 md:w-5 h-3 w-3"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -146,32 +146,30 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             <img
               src={`/ranks/${getRank(formData.xp)}.png`}
               alt="Player"
-              className="w-16 h-16 rounded-full object-cover mr-4"
+              className="h-6 w-6 md:w-12 md:h-12 rounded-full object-cover mr-4"
               style={{
                 border: `3px solid ${color}`,
                 padding: "2px",
               }}
             />
-            <div className="flex-1">
-              <div className="flex gap-5 items-center">
-                <div className="text-white text-lg">Akshat</div>
-                <div className="text-white font-semibold text-xs">address</div>
+            <div className="flex-1 text-white">
+              <div className="flex items-center justify-between w-[150px] md:w-[200px]">
+                <div className="text-md md:text-lg">Akshat</div>
+                <div className="font-semibold text-xs">address</div>
               </div>
-              <div className="flex items-center space-x-2 mt-2">
+              <div className="flex items-center space-x-1 md:space-x-2 w-[150px] md:w-[200px]">
                 <img
                   src={`/ranks/${getRank(formData.xp)}.png`}
                   alt="League"
-                  className="w-4 h-4"
+                  className="md:w-4 md:h-4 w-3 h-3"
                 />
-                <div className="flex-1 h-3 bg-white/20 rounded-full">
+                <div className="flex-1 h-2 md:h-3 bg-white/20 rounded-full">
                   <div
                     className="h-full bg-green-500 rounded-full transition-all duration-300"
                     style={{ width: `${formData.xp % 100}%` }}
                   />
                 </div>
-                <div className="text-white text-xs font-bold">
-                  {formData.xp % 100}/100
-                </div>
+                <div className="text-xs font-bold">{formData.xp % 100}/100</div>
               </div>
             </div>
           </div>
@@ -244,7 +242,11 @@ export const PlayerProfileForm = ({ onSubmit }) => {
 
         {isEdit && (
           <>
-            <EditProfile onBack={()=>{setIsEdit(false)}}/>
+            <EditProfile
+              onBack={() => {
+                setIsEdit(false);
+              }}
+            />
           </>
         )}
         <div className="absolute right-0 md:right-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[25vw] mx-2">
