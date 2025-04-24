@@ -14,10 +14,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
   const [gun, setGun] = useState("Revolver");
   const [color, setColor] = useState("black");
-  const [colorId, setColorId] = useState("black");
-  const [gunId, setGunId] = useState("black");
-  const [playerColor, setPlayerColor] = useState([1, 3, 4]);
-  const [playerGun, setPlayerGun] = useState([1, 3, 4]);
+  const [colorId, setColorId] = useState(1);
+  const [gunId, setGunId] = useState(1);
+  const [playerColors, setPlayerColors] = useState([1, 3, 4]);
+  const [playerGuns, setPlayerGuns] = useState([1, 3, 4]);
   const [formData, setFormData] = useState({
     name: "Player 1",
     address: "temp",
@@ -120,6 +120,39 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]"
           width={"700px"}
         />
+        {/* <div className="absolute left-4 top-4 z-10">
+          <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg w-[320px]">
+            <img
+              src={`/ranks/${getRank(formData.xp)}.png`}
+              alt="Player"
+              className="w-16 h-16 rounded-full object-cover mr-4"
+              style={{
+                border: `3px solid ${color}`,
+                padding: "2px",
+              }}
+            />
+            <div className="flex-1">
+              <div className="flex gap-5 items-center"><div className="text-white text-lg">Akshat</div><div className="text-white font-semibold text-xs">address</div></div>
+              <div className="flex items-center space-x-2 mt-2">
+                <img
+                  src={`/ranks/${getRank(formData.xp)}.png`}
+                  alt="League"
+                  className="w-4 h-4"
+                />
+                <div className="flex-1 h-3 bg-white/20 rounded-full">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all duration-300"
+                    style={{ width: `${formData.xp % 100}%` }}
+                  />
+                </div>
+                <div className="text-white text-xs font-bold">
+                  {formData.xp % 100}/100
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+
         <div className="absolute left-4 top-4 z-10">
           {!isConnected ? (
             <div className="flex flex-col gap-2">
@@ -165,7 +198,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                       shape="square"
                       style={{ width: "100%", height: "100%" }}
                     />
-                    {!playerColor.includes(color.id) && (
+                    {!playerColors.includes(color.id) && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-md">
                         <LockOutlined className="text-white text-xl" />
                       </div>
@@ -197,7 +230,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                       shape="square"
                       style={{ width: "100%", height: "100%" }}
                     />
-                    {!playerGun.includes(gun.id) && (
+                    {!playerGuns.includes(gun.id) && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-md">
                         <LockOutlined className="text-white text-xl" />
                       </div>
@@ -215,7 +248,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           />
         </div>
 
-        <div className="absolute right-4 bottom-4 z-10 flex flex-col">
+        <div className="absolute right-4 bottom-4 z-10 flex flex-col ">
           <div className="text-sm text-gray-300">
             Enter Room Code to Join / Create
           </div>
@@ -227,7 +260,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             onChange={(e) => setRoomCode(e.target.value)}
             className="rounded-lg bg-yellow-400"
           />
-          {playerColor.includes(colorId) && playerGun.includes(gunId) ? (
+          {playerColors.includes(colorId) && playerGuns.includes(gunId) ? (
             <button
               onClick={handlePlay}
               className="mt-2 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg"
