@@ -8,7 +8,7 @@ import Colors from "./Colors.json";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useConnect } from "wagmi";
 import { getXTokenBalance } from "../contracts/function";
-import { formatEther } from 'viem';
+import { formatEther } from "viem";
 
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
@@ -41,7 +41,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       } catch (error) {
         console.error("Error fetching balance:", error);
       }
-    }
+    },
   });
 
   const formatAddress = (address) => {
@@ -63,11 +63,11 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     };
     setFormData(updatedData);
   }, []);
-  const errorClick = () =>{
+  const errorClick = () => {
     toast.error("Please purchase locked items before playing.", {
-        position: "top-center",
-      });
-  }
+      position: "top-center",
+    });
+  };
   const [editMode, setEditMode] = useState(false);
   const handlePlay = () => {
     if (!roomCode.trim()) {
@@ -129,18 +129,19 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                   onClick={() => connect({ connector })}
                   className={`
                     px-4 py-2 rounded-lg
-                    ${isLoading && connector.id === pendingConnector?.id
-                      ? 'bg-gray-600'
-                      : 'bg-blue-600 hover:bg-blue-700'}
+                    ${
+                      isLoading && connector.id === pendingConnector?.id
+                        ? "bg-gray-600"
+                        : "bg-blue-600 hover:bg-blue-700"
+                    }
                     text-white font-semibold transition-all
                     flex items-center justify-center min-w-[160px]
                   `}
                   disabled={!connector.ready || isLoading}
                 >
-                  {isLoading && connector.id === pendingConnector?.id 
-                    ? 'Connecting...'
-                    : 'Connect Wallet'
-                  }
+                  {isLoading && connector.id === pendingConnector?.id
+                    ? "Connecting..."
+                    : "Connect Wallet"}
                 </button>
               ))}
             </div>
@@ -175,7 +176,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                   </div>
                 ),
                 value: color.type,
-              }))
+              })),
             ]}
             value={color}
             onChange={(value) => setColor(value)}
@@ -207,7 +208,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                   </div>
                 ),
                 value: gun.type,
-              }))
+              })),
             ]}
             value={gun}
             onChange={(value) => setGun(value)}
@@ -226,7 +227,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             onChange={(e) => setRoomCode(e.target.value)}
             className="rounded-lg bg-yellow-400"
           />
-          {playerColor.includes(colorId) && playerGun.includes(gunId)? (
+          {playerColor.includes(colorId) && playerGun.includes(gunId) ? (
             <button
               onClick={handlePlay}
               className="mt-2 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg"
@@ -234,7 +235,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               Play Game
             </button>
           ) : (
-            <button className="mt-2 bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-inner opacity-60 " onClick={errorClick}>
+            <button
+              className="mt-2 bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-inner opacity-60 "
+              onClick={errorClick}
+            >
               Play Game
             </button>
           )}
