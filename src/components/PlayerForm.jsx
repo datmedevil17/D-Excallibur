@@ -144,7 +144,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               </svg>
             </div>
             <img
-              src={`/ranks/${getRank(formData.xp)}.png`}
+              src={`https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg`}
               alt="Player"
               className="h-6 w-6 md:w-12 md:h-12 rounded-full object-cover mr-4"
               style={{
