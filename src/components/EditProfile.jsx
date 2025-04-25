@@ -1,12 +1,14 @@
 import React, { useRef, useState } from "react";
-import { CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined, CloudUploadOutlined } from "@ant-design/icons";
 
 export const EditProfile = ({ kill, death, xp, token, onBack }) => {
   // refs + state
   const fileInputRef = useRef(null);
-  const [preview, setPreview] = useState("https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg"); // replace with your placeholder
-  const [name, setName]       = useState("Akshat");
-  const [add, setAdd]       = useState("address");
+  const [preview, setPreview] = useState(
+    "https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg"
+  ); // replace with your placeholder
+  const [name, setName] = useState("Akshat");
+  const [add, setAdd] = useState("address");
 
   // open file picker
   const handleImageClick = () => {
@@ -41,14 +43,18 @@ export const EditProfile = ({ kill, death, xp, token, onBack }) => {
 
         <div
           onClick={handleImageClick}
-          className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer"
+          className="relative w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer group"
         >
           <img
             src={preview}
             alt="Profile"
             className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-50 transition">
+            <CloudUploadOutlined className="text-white text-2xl" />
+          </div>
         </div>
+
         <input
           ref={fileInputRef}
           type="file"
@@ -66,7 +72,7 @@ export const EditProfile = ({ kill, death, xp, token, onBack }) => {
         <input
           type="text"
           value={add}
-          disabled = {true}
+          disabled={true}
           className=" w-full border border-gray-300 rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 

@@ -1,4 +1,4 @@
-import { LockOutlined } from "@ant-design/icons";
+import { DollarOutlined, LockOutlined } from "@ant-design/icons";
 import { Avatar, Input, Segmented } from "antd";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -122,7 +122,13 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]"
           width={"700px"}
         />
-        <div className="absolute left-4 top-4 z-10">
+        <div className="absolute right-4 top-4 z-10 border border-yellow-400 rounded-lg p-2">
+        <p className=" space-x-2 text-lg font-semibold text-yellow-300">
+            <DollarOutlined className="text-xl" />
+            <span>{formData.xp}</span>
+          </p>
+        </div>
+        {/* <div className="absolute left-4 top-4 z-10">
           <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-lg w-[190px] md:w-[300px]">
             <div
               className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
@@ -173,9 +179,9 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* <div className="absolute left-4 top-4 z-10">
+        <div className="absolute left-4 top-4 z-10">
           {!isConnected ? (
             <div className="flex flex-col gap-2">
               {connectors.map((connector) => (
@@ -206,7 +212,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
               <p className="font-medium">Balance: {userBalance} XTK</p>
             </div>
           )}
-        </div> */}
+        </div>
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
             vertical
