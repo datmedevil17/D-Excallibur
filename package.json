@@ -20,6 +20,7 @@
     "@wagmi/connectors": "^5.7.12",
     "@wagmi/core": "^2.16.7",
     "antd": "^5.24.7",
+    "framer-motion": "^12.9.2",
     "leva": "^0.9.35",
     "playroomkit": "^0.0.36",
     "r3f-vite-starter": "file:",

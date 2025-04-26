@@ -6,8 +6,8 @@ import { CharacterShowcase } from "./CharacterShowcase";
 import Stats from "./Stats.json";
 import Colors from "./Colors.json";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useConnect } from "wagmi";
-import { getXTokenBalance } from "../contracts/function";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { getProfile, getXTokenBalance } from "../contracts/function";
 import { formatEther } from "viem";
 import { EditProfile } from "./EditProfile";
 
@@ -34,17 +34,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   });
   const [userBalance, setUserBalance] = useState("0");
   const { address, isConnected } = useAccount();
-  const { connect, connectors, isLoading, pendingConnector } = useConnect({
-    onSuccess: async (data) => {
-      const address = data.accounts[0];
-      try {
-        const balance = await getXTokenBalance(address);
-        setUserBalance(formatEther(balance));
-      } catch (error) {
-        console.error("Error fetching balance:", error);
-      }
-    },
-  });
+  const { disconnect } = useDisconnect();
 
   const formatAddress = (address) => {
     if (!address) return "";
@@ -114,6 +104,56 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     }
   }, [gun]);
 
+  useEffect(() => {
+    const updateBalance = async () => {
+      if (address && isConnected) {
+        try {
+          const balance = await getXTokenBalance(address);
+          setUserBalance(formatEther(balance));
+        } catch (error) {
+          console.error("Error fetching balance:", error);
+          setUserBalance("0");
+        }
+      }
+    };
+    
+    updateBalance();
+  }, [address, isConnected]);
+
+  // Add new state for profile data
+  const [profileData, setProfileData] = useState(null);
+
+  // Replace the direct profile fetch with useEffect
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (address && isConnected) {
+        try {
+          const profile = await getProfile(address);
+          setProfileData({
+            username: profile[0],
+            xp: Number(profile[1]),
+            photo: profile[2],
+            tokens: Number(profile[3])
+          });
+          
+          // Update form data with profile information
+          setFormData(prev => ({
+            ...prev,
+            name: profile[0] || "Player 1",
+            xp: profile[1].toString() || "0",
+            photo: profile[2] || prev.photo,
+            token: profile[3].toString() || "0"
+          }));
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          toast.error("Failed to load profile data");
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [address, isConnected]);
+
   return (
     <>
       <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
@@ -123,96 +163,99 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           width={"700px"}
         />
         <div className="absolute right-4 top-4 z-10 border border-yellow-400 rounded-lg p-2">
-        <p className=" space-x-2 text-lg font-semibold text-yellow-300">
+          <p className=" space-x-2 text-lg font-semibold text-yellow-300">
             <DollarOutlined className="text-xl" />
-            <span>{formData.xp}</span>
+            <span>{userBalance}</span>
           </p>
         </div>
-        {/* <div className="absolute left-4 top-4 z-10">
-          <div className="relative flex items-center bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-lg w-[190px] md:w-[300px]">
-            <div
-              className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
-              onClick={() => setIsEdit(!isEdit)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="md:h-5 md:w-5 h-3 w-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"
-                />
-              </svg>
-            </div>
-            <img
-              src={`https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg`}
-              alt="Player"
-              className="h-6 w-6 md:w-12 md:h-12 rounded-full object-cover mr-4"
-              style={{
-                border: `3px solid ${color}`,
-                padding: "2px",
-              }}
-            />
-            <div className="flex-1 text-white">
-              <div className="flex items-center justify-between w-[120px] md:w-[200px]">
-                <div className="text-md md:text-lg">Akshat</div>
-                <div className="font-semibold text-xs">address</div>
-              </div>
-              <div className="flex items-center space-x-1 md:space-x-2 w-[120px] md:w-[200px]">
-                <img
-                  src={`/ranks/${getRank(formData.xp)}.png`}
-                  alt="League"
-                  className="md:w-4 md:h-4 w-3 h-3"
-                />
-                <div className="flex-1 h-2 md:h-3 bg-white/20 rounded-full">
-                  <div
-                    className="h-full bg-green-500 rounded-full transition-all duration-300"
-                    style={{ width: `${formData.xp % 100}%` }}
-                  />
-                </div>
-                <div className="text-xs font-bold">{formData.xp % 100}/100</div>
-              </div>
-            </div>
-          </div>
-        </div> */}
-
         <div className="absolute left-4 top-4 z-10">
           {!isConnected ? (
             <div className="flex flex-col gap-2">
-              {connectors.map((connector) => (
-                <button
-                  key={connector.id}
-                  onClick={() => connect({ connector })}
-                  className={`
-                    px-4 py-2 rounded-lg
-                    ${
-                      isLoading && connector.id === pendingConnector?.id
-                        ? "bg-gray-600"
-                        : "bg-blue-600 hover:bg-blue-700"
-                    }
-                    text-white font-semibold transition-all
-                    flex items-center justify-center min-w-[160px]
-                  `}
-                  disabled={!connector.ready || isLoading}
-                >
-                  {isLoading && connector.id === pendingConnector?.id
-                    ? "Connecting..."
-                    : "Connect Wallet"}
-                </button>
-              ))}
+              <ConnectButton.Custom>
+                {({ account, chain, openConnectModal, mounted }) => {
+                  return (
+                    <div>
+                      {(!mounted || !account || !chain) && (
+                        <button
+                          onClick={openConnectModal}
+                          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700
+                            text-white font-semibold transition-all
+                            flex items-center justify-center min-w-[160px]"
+                        >
+                          Connect Wallet
+                        </button>
+                      )}
+                    </div>
+                  );
+                }}
+              </ConnectButton.Custom>
             </div>
           ) : (
-            <div className="bg-[rgba(0,0,0,0.5)] p-3 rounded-lg text-white">
-              <p className="font-medium">Address: {formatAddress(address)}</p>
-              <p className="font-medium">Balance: {userBalance} XTK</p>
+            <div className="relative flex flex-col gap-2">
+              <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-lg w-[190px] md:w-[300px]">
+                <div
+                  className="absolute top-2 right-2 text-white cursor-pointer hover:text-gray-300 transition"
+                  onClick={() => setIsEdit(!isEdit)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="md:h-5 md:w-5 h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"
+                    />
+                  </svg>
+                </div>
+                <img
+                  src={`https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg`}
+                  alt="Player"
+                  className="h-6 w-6 md:w-12 md:h-12 rounded-full object-cover mr-4"
+                  style={{
+                    border: `3px solid ${color}`,
+                    padding: "2px",
+                  }}
+                />
+                <div className="flex-1 text-white">
+                  <div className="flex items-center justify-between w-[120px] md:w-[200px]">
+                    <div className="text-md md:text-lg">Player 1</div>
+                    <div className="font-semibold text-xs">
+                      {formatAddress(address)}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 md:space-x-2 w-[120px] md:w-[200px]">
+                    <img
+                      src={`/ranks/${getRank(formData.xp)}.png`}
+                      alt="League"
+                      className="md:w-4 md:h-4 w-3 h-3"
+                    />
+                    <div className="flex-1 h-2 md:h-3 bg-white/20 rounded-full">
+                      <div
+                        className="h-full bg-green-500 rounded-full transition-all duration-300"
+                        style={{ width: `${formData.xp % 100}%` }}
+                      />
+                    </div>
+                    <div className="text-xs font-bold">{userBalance} XTK</div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => disconnect()}
+                className="w-full px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700
+                  text-white font-semibold transition-all
+                  flex items-center justify-center"
+              >
+                Disconnect Wallet
+              </button>
             </div>
           )}
         </div>
+
         <div className="absolute left-0 md:left-1/2 bottom-1/4 z-10 flex flex-col md:translate-x-[-25vw] mx-2">
           <Segmented
             vertical

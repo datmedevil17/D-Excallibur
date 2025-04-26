@@ -31,7 +31,7 @@ export function Providers({ children }) {
     return (
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider>
+          <RainbowKitProvider autoConnect={false}>
             {children}
           </RainbowKitProvider>
         </QueryClientProvider>
