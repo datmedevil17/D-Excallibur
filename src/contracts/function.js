@@ -85,6 +85,14 @@ export const setProfile = async (uri, name) => {
     args: [uri, name],
   });
 };
+export const updateName = async (name) => {
+  return await writeContract(config, {
+    abi: platformAbi,
+    address: platformAddress,
+    functionName: "updateName",
+    args: [name],
+  });
+};
 
 export const mintWeapon = async (id, amount) => {
   return await writeContract(config, {

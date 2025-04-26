@@ -1,87 +1,141 @@
-import React, { useRef, useState } from "react";
-import { CloseOutlined, CloudUploadOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
+import { CloseOutlined } from "@ant-design/icons";
+import { updateName } from "../contracts/function";
+import axios from 'axios';
+import { toast } from "react-toastify";
 
-export const EditProfile = ({ kill, death, xp, token, onBack }) => {
-  // refs + state
-  const fileInputRef = useRef(null);
-  const [preview, setPreview] = useState(
-    "https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg"
-  ); // replace with your placeholder
-  const [name, setName] = useState("Akshat");
-  const [add, setAdd] = useState("address");
+export const EditProfile = ({ onBack, address, profileName }) => {
+  const [name, setName] = useState(profileName);
+  const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // open file picker
-  const handleImageClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // on file selected
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log(file);
-      setPreview(URL.createObjectURL(file));
+  const generateAIName = async () => {
+    setLoading(true);
+    try {
+      const themes = [
+        "Generate a single word epic warrior name",
+        "Generate a single word mystical wizard name",
+        "Generate a single word stealthy assassin name",
+        "Generate a single word legendary hero name",
+        "Generate a single word mythical creature name"
+      ];
+      
+      const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+      
+      const response = await axios({
+        url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCHK_9m7dwti-kYYWmr-ciR-Kp9_QTgvOc",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          contents: [
+            {
+              parts: [{ 
+                text: `${randomTheme}. Make it unique and creative, return just the name without any explanation or punctuation` 
+              }],
+            },
+          ],
+        },
+      });
+      
+      const suggestedName = response.data.candidates[0].content.parts[0].text;
+      setName(suggestedName.trim());
+      
+    } catch (error) {
+      console.error("Error generating name:", error);
+      toast.error("Failed to generate name");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSave = () => {
-    console.log("Saving profile:", { name, avatar: preview });
-    onBack();
+  const handleSave = async () => {
+    if (!name.trim()) {
+      toast.error("Please enter a name");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateName(name);
+      toast.success("Name updated successfully!");
+      onBack();
+    } catch (error) {
+      console.error("Error updating name:", error);
+      toast.error("Failed to update name");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-51">
-      <div className="relative bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-51">
+      <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
         <button
           onClick={onBack}
-          className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
         >
-          <CloseOutlined style={{ fontSize: "16px" }} />
+          <CloseOutlined style={{ fontSize: "20px" }} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Profile</h2>
+        <h2 className="text-3xl font-bold mb-8 text-white text-center">
+          Edit Profile Name
+        </h2>
 
-        <div
-          onClick={handleImageClick}
-          className="relative w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer group"
-        >
-          <img
-            src={preview}
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-50 transition">
-            <CloudUploadOutlined className="text-white text-2xl" />
+        <div className="space-y-6">
+          <div className="relative">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-gray-800/50 text-white border border-gray-700 rounded-lg px-4 py-3 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                text-lg transition-all duration-200"
+              placeholder="Enter your name"
+            />
+            <button
+              onClick={generateAIName}
+              disabled={loading}
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 
+                bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md 
+                shadow-lg hover:shadow-blue-500/20 transition duration-200 ease-in-out
+                disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  Generating
+                </span>
+              ) : (
+                "Generate"
+              )}
+            </button>
           </div>
+
+          <div className="text-gray-400 text-sm text-center">
+            Connected Address: {address?.slice(0, 6)}...{address?.slice(-4)}
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !name.trim()}
+            className="w-full py-3 px-6 bg-green-600 hover:bg-green-700 
+              text-white font-semibold rounded-lg shadow-lg 
+              hover:shadow-green-500/20 transition duration-200 ease-in-out
+              disabled:opacity-50 disabled:cursor-not-allowed
+              transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            {isSaving ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                Updating ...
+              </span>
+            ) : (
+              "Update Name"
+            )}
+          </button>
         </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className=" w-full border border-gray-300 rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-        <input
-          type="text"
-          value={add}
-          disabled={true}
-          className=" w-full border border-gray-300 rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-
-        <button
-          onClick={handleSave}
-          className=" w-full py-2 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full shadow-md hover:shadow-lg transition duration-200 ease-in-out"
-        >
-          Save Changes
-        </button>
       </div>
     </div>
   );

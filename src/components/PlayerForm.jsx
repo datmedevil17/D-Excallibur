@@ -7,9 +7,109 @@ import Stats from "./Stats.json";
 import Colors from "./Colors.json";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { getProfile, getXTokenBalance } from "../contracts/function";
+import { getOwnedSkins, getProfile, getWeaponBalances, getXTokenBalance, setProfile } from "../contracts/function";
 import { formatEther } from "viem";
 import { EditProfile } from "./EditProfile";
+import { uploadToIpfs } from "../contracts/pinata";
+
+// Add this component after your imports
+const CreateProfileModal = ({ onSubmit, onCancel }) => {
+  const [name, setName] = useState("");
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        // Set preview for immediate visual feedback
+        setPreview(URL.createObjectURL(file));
+        
+        // Show loading state
+        toast.info("Uploading image to IPFS...", {
+          position: "top-center",
+        });
+
+        // Upload to IPFS
+        const ipfsUri = await uploadToIpfs(file);
+        
+        // Set the IPFS URI as the image
+        setImage(ipfsUri);
+        
+        toast.success("Image uploaded successfully!", {
+          position: "top-center",
+        });
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error("Failed to upload image. Please try again.", {
+          position: "top-center",
+        });
+        
+        // Clear preview and image if upload fails
+        setPreview("");
+        setImage(null);
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !image) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    onSubmit({ name, image });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+      <div className="bg-gradient-to-br from-blue-800 to-blue-600 p-8 rounded-2xl w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-white">
+          Create Your Profile
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-black bg-opacity-30 p-3 rounded-lg text-white"
+              placeholder="Enter your name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full bg-black bg-opacity-30 p-3 rounded-lg text-white"
+            />
+            {preview && (
+              <img src={preview} alt="Preview" className="mt-2 w-20 h-20 rounded-full object-cover" />
+            )}
+          </div>
+          <div className="flex space-x-4 pt-4">
+            <button
+              type="submit"
+              className="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg font-medium transition-all text-white"
+            >
+              Create Profile
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 bg-red-500 hover:bg-red-600 py-3 rounded-lg font-medium transition-all text-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
@@ -104,6 +204,14 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     }
   }, [gun]);
 
+  // Add new state for profile data
+  const [profileData, setProfileData] = useState(null);
+
+  // Add these new states at the top of your component
+  const [showCreateProfile, setShowCreateProfile] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+
+  // Add this effect to handle balance updates
   useEffect(() => {
     const updateBalance = async () => {
       if (address && isConnected) {
@@ -116,42 +224,151 @@ export const PlayerProfileForm = ({ onSubmit }) => {
         }
       }
     };
-    
+
     updateBalance();
   }, [address, isConnected]);
 
-  // Add new state for profile data
-  const [profileData, setProfileData] = useState(null);
-
-  // Replace the direct profile fetch with useEffect
+  // Correct the profile fetching logic
   useEffect(() => {
     const fetchProfile = async () => {
       if (address && isConnected) {
         try {
+          setIsProfileLoading(true);
           const profile = await getProfile(address);
-          setProfileData({
-            username: profile[0],
-            xp: Number(profile[1]),
-            photo: profile[2],
-            tokens: Number(profile[3])
-          });
           
-          // Update form data with profile information
+          // Check if profile exists (assuming empty values mean no profile)
+          if (!profile[0] && !profile[2]) {
+            setShowCreateProfile(true);
+            setIsProfileLoading(false);
+            return;
+          }
+
+          const profileData = {
+            username: profile[2] || formData.name,
+            xp: Number(profile[1]) || 0,
+            photo: profile[0] || formData.photo,
+            tokens: Number(profile[3]) || 0
+          };
+
+          setProfileData(profileData);
+          
+          // Update form data
           setFormData(prev => ({
             ...prev,
-            name: profile[0] || "Player 1",
-            xp: profile[1].toString() || "0",
-            photo: profile[2] || prev.photo,
-            token: profile[3].toString() || "0"
+            name: profileData.username,
+            xp: profileData.xp.toString(),
+            photo: profileData.photo,
+            token: profileData.tokens.toString()
           }));
+          
+          setShowCreateProfile(false);
         } catch (error) {
           console.error("Error fetching profile:", error);
           toast.error("Failed to load profile data");
+          setShowCreateProfile(true);
+        } finally {
+          setIsProfileLoading(false);
         }
       }
     };
 
     fetchProfile();
+  }, [address, isConnected]);
+
+  // Correct the profile creation handler
+  const handleCreateProfile = async (data) => {
+    try {
+      toast.info("Creating profile...", {
+        position: "top-center",
+      });
+
+      // Call setProfile with correct parameters
+      await setProfile(data.name, data.image);
+
+      // Refresh profile data
+      const profile = await getProfile(address);
+      
+      // Update both profile and balance
+      setProfileData({
+        username: profile[2],
+        xp: Number(profile[1]),
+        photo: profile[0],
+        tokens: Number(profile[3])
+      });
+      
+      setFormData(prev => ({
+        ...prev,
+        name: profile[2],
+        photo: profile[0],
+        xp: profile[1].toString(),
+        token: profile[3].toString()
+      }));
+
+      // Update balance after profile creation
+      const balance = await getXTokenBalance(address);
+      setUserBalance(formatEther(balance));
+
+      setShowCreateProfile(false);
+      toast.success("Profile created successfully!");
+    } catch (error) {
+      console.error("Error creating profile:", error);
+      toast.error("Failed to create profile. Please try again.");
+    }
+  };
+  const [weaponsArray, setWeaponsArray] = useState({
+    address: '',
+    balances: [0, 0, 0, 0, 0]
+  });
+
+  const [skinsArray, setSkinsArray] = useState({
+    address: '',
+    owned: [false, false, false, false, false]
+  });
+
+  useEffect(() => {
+    const fetchWeaponsAndSkins = async () => {
+      if (address && isConnected) {
+        try {
+          // Fetch weapons and skins in parallel
+          const [weapons, skins] = await Promise.all([
+            getWeaponBalances(address),
+            getOwnedSkins(address)
+          ]);
+
+          // Update weapons state with proper format
+          setWeaponsArray({
+            address: address,
+            balances: weapons.map(count => Number(count))
+          });
+
+          // Update skins state with proper format
+          setSkinsArray({
+            address: address,
+            owned: skins
+          });
+
+          // Update available items
+          const availableGuns = weapons
+            .map((count, index) => ({ count: Number(count), index }))
+            .filter(item => item.count > 0)
+            .map(item => item.index + 1);
+
+          const availableColors = skins
+            .map((owned, index) => ({ owned, index }))
+            .filter(item => item.owned)
+            .map(item => item.index + 1);
+
+          setPlayerGuns(availableGuns);
+          setPlayerColors(availableColors);
+
+        } catch (error) {
+          console.error("Error fetching weapons and skins:", error);
+          toast.error("Failed to load your items");
+        }
+      }
+    };
+
+    fetchWeaponsAndSkins();
   }, [address, isConnected]);
 
   return (
@@ -213,7 +430,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                   </svg>
                 </div>
                 <img
-                  src={`https://www.shutterstock.com/image-photo/stitch-disney-character-cartoon-vector-600nw-2522057197.jpg`}
+                  src={profileData?.photo || formData.photo}
                   alt="Player"
                   className="h-6 w-6 md:w-12 md:h-12 rounded-full object-cover mr-4"
                   style={{
@@ -223,21 +440,24 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                 />
                 <div className="flex-1 text-white">
                   <div className="flex items-center justify-between w-[120px] md:w-[200px]">
-                    <div className="text-md md:text-lg">Player 1</div>
+                    <div className="text-md md:text-lg">
+                      {profileData?.username || formData.name}
+                      
+                    </div>
                     <div className="font-semibold text-xs">
                       {formatAddress(address)}
                     </div>
                   </div>
                   <div className="flex items-center space-x-1 md:space-x-2 w-[120px] md:w-[200px]">
                     <img
-                      src={`/ranks/${getRank(formData.xp)}.png`}
+                      src={`/ranks/${getRank(profileData?.xp || formData.xp)}.png`}
                       alt="League"
                       className="md:w-4 md:h-4 w-3 h-3"
                     />
                     <div className="flex-1 h-2 md:h-3 bg-white/20 rounded-full">
                       <div
                         className="h-full bg-green-500 rounded-full transition-all duration-300"
-                        style={{ width: `${formData.xp % 100}%` }}
+                        style={{ width: `${(profileData?.xp || Number(formData.xp)) % 100}%` }}
                       />
                     </div>
                     <div className="text-xs font-bold">{userBalance} XTK</div>
@@ -294,7 +514,9 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             <EditProfile
               onBack={() => {
                 setIsEdit(false);
-              }}
+              }} address={address}
+              profileName={formData.name}
+              photo={formData.photo}
             />
           </>
         )}
@@ -450,6 +672,15 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             </form>
           </div>
         </div>
+      )}
+      {showCreateProfile && (
+        <CreateProfileModal
+          onSubmit={handleCreateProfile}
+          onCancel={() => {
+            disconnect();
+            setShowCreateProfile(false);
+          }}
+        />
       )}
     </>
   );
