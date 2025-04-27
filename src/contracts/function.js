@@ -20,6 +20,15 @@ export const getXTokenTotalSupply = async () => {
   });
 };
 
+export const checkAllowance = async (owner, spender) => {
+  return await readContract(config, {
+    abi: tokenAbi,
+    address: tokenAddress,
+    functionName: "checkAllowance",
+    args: [owner, spender],
+  });
+};
+
 // XToken Write Functions
 export const mintXToken = async (to, amount) => {
   return await writeContract(config, {
@@ -41,12 +50,21 @@ export const approveXToken = async (spender, amount) => {
 
 // WeaponProfileSystem Read Functions
 export const getProfile = async (address) => {
-  return await readContract(config, {
+  const profile = await readContract(config, {
     abi: platformAbi,
     address: platformAddress,
-    functionName: "profiles",
+    functionName: "getProfile",
     args: [address],
   });
+  
+  return {
+    profileURI: profile.profileURI,
+    xp: profile.xp,
+    name: profile.name,
+    weaponBalances: profile.weaponBalances,
+    skinsOwned: profile.skinsOwned,
+    isInitialized: profile.isInitialized
+  };
 };
 
 export const getWeaponBalances = async (address) => {
@@ -85,12 +103,22 @@ export const setProfile = async (uri, name) => {
     args: [uri, name],
   });
 };
+
 export const updateName = async (name) => {
   return await writeContract(config, {
     abi: platformAbi,
     address: platformAddress,
     functionName: "updateName",
     args: [name],
+  });
+};
+
+export const updateXp = async (newXp) => {
+  return await writeContract(config, {
+    abi: platformAbi,
+    address: platformAddress,
+    functionName: "updateXP",
+    args: [newXp],
   });
 };
 
@@ -121,11 +149,30 @@ export const depositXToken = async (amount) => {
   });
 };
 
+export const initializeProfile = async () => {
+  return await writeContract(config, {
+    abi: platformAbi,
+    address: platformAddress,
+    functionName: "initializeProfile",
+    args: [],
+  });
+};
+
+// Admin Functions
 export const withdrawXToken = async (amount) => {
   return await writeContract(config, {
     abi: platformAbi,
     address: platformAddress,
     functionName: "withdrawXToken",
     args: [amount],
+  });
+};
+
+export const setSkinPrice = async (newPrice) => {
+  return await writeContract(config, {
+    abi: platformAbi,
+    address: platformAddress,
+    functionName: "setSkinPrice",
+    args: [newPrice],
   });
 };

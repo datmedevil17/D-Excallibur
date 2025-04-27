@@ -1,4 +1,4 @@
-import { DollarOutlined, LockOutlined } from "@ant-design/icons";
+import { DollarOutlined, LockOutlined, ShoppingOutlined } from "@ant-design/icons";
 import { Avatar, Input, Segmented } from "antd";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -11,6 +11,7 @@ import { getOwnedSkins, getProfile, getWeaponBalances, getXTokenBalance, setProf
 import { formatEther } from "viem";
 import { EditProfile } from "./EditProfile";
 import { uploadToIpfs } from "../contracts/pinata";
+import { Shop } from "./Shop";
 
 // Add this component after your imports
 const CreateProfileModal = ({ onSubmit, onCancel }) => {
@@ -111,6 +112,12 @@ const CreateProfileModal = ({ onSubmit, onCancel }) => {
   );
 };
 
+// Add this helper function at the top of your component
+const formatBalance = (balance) => {
+  const number = parseFloat(balance);
+  return number.toFixed(2); // Rounds to 2 decimal places
+};
+
 export const PlayerProfileForm = ({ onSubmit }) => {
   const [roomCode, setRoomCode] = useState("");
   const [gun, setGun] = useState("Revolver");
@@ -118,7 +125,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   const [colorId, setColorId] = useState(1);
   const [isEdit, setIsEdit] = useState(false);
   const [gunId, setGunId] = useState(1);
-  const [playerColors, setPlayerColors] = useState([1, 3, 4]);
+  const [playerColors, setPlayerColors] = useState([1,3,4]);
   const [playerGuns, setPlayerGuns] = useState([1, 3, 4]);
   const [formData, setFormData] = useState({
     name: "Player 1",
@@ -160,7 +167,6 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       position: "top-center",
     });
   };
-  const [editMode, setEditMode] = useState(false);
   const handlePlay = () => {
     if (!roomCode.trim()) {
       toast.error("Please enter a Room Code to join or create a game.", {
@@ -181,29 +187,6 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     onSubmit(updatedData);
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  useEffect(() => {
-    const selectedColor = Colors.find((c) => c.type === color);
-    if (selectedColor) {
-      setColorId(selectedColor.id);
-    }
-  }, [color]);
-
-  useEffect(() => {
-    const selectedGun = Stats.find((c) => c.type === gun);
-    if (selectedGun) {
-      setGunId(selectedGun.id);
-    }
-  }, [gun]);
-
   // Add new state for profile data
   const [profileData, setProfileData] = useState(null);
 
@@ -217,10 +200,10 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       if (address && isConnected) {
         try {
           const balance = await getXTokenBalance(address);
-          setUserBalance(formatEther(balance));
+          setUserBalance(formatBalance(formatEther(balance)));
         } catch (error) {
           console.error("Error fetching balance:", error);
-          setUserBalance("0");
+          setUserBalance("0.00");
         }
       }
     };
@@ -228,43 +211,61 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     updateBalance();
   }, [address, isConnected]);
 
-  // Correct the profile fetching logic
+  // Update the fetchProfile function in PlayerProfileForm
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileData = async () => {
       if (address && isConnected) {
         try {
           setIsProfileLoading(true);
           const profile = await getProfile(address);
           
-          // Check if profile exists (assuming empty values mean no profile)
-          if (!profile[0] && !profile[2]) {
+          // Check if profile exists and has a name
+          if (!profile.isInitialized || !profile.name) {
+            console.log('No profile or name not set');
             setShowCreateProfile(true);
             setIsProfileLoading(false);
             return;
           }
 
-          const profileData = {
-            username: profile[2] || formData.name,
-            xp: Number(profile[1]) || 0,
-            photo: profile[0] || formData.photo,
-            tokens: Number(profile[3]) || 0
-          };
+          // Profile exists with name, update states
+          setProfileData({
+            username: profile.name,
+            photo: profile.profileURI,
+            xp: Number(profile.xp),
+            isInitialized: true,
+            weaponBalances: profile.weaponBalances,
+            skinsOwned: profile.skinsOwned
+          });
 
-          setProfileData(profileData);
-          
-          // Update form data
           setFormData(prev => ({
             ...prev,
-            name: profileData.username,
-            xp: profileData.xp.toString(),
-            photo: profileData.photo,
-            token: profileData.tokens.toString()
+            name: profile.name,
+            photo: profile.profileURI,
+            xp: profile.xp.toString(),
           }));
-          
+
+          // Update available items
+          const availableGuns = profile.weaponBalances.reduce((acc, count, index) => {
+            if (Number(count) > 0) {
+              acc.push(index + 1);
+            }
+            return acc;
+          }, []);
+
+          const availableColors = profile.skinsOwned.reduce((acc, owned, index) => {
+            if (owned === true) {
+              acc.push(index + 1);
+            }
+            return acc;
+          }, []);
+
+          setPlayerGuns(availableGuns);
+          setPlayerColors(availableColors);
           setShowCreateProfile(false);
+
         } catch (error) {
           console.error("Error fetching profile:", error);
-          toast.error("Failed to load profile data");
+          toast.error("Failed to load profile");
           setShowCreateProfile(true);
         } finally {
           setIsProfileLoading(false);
@@ -272,49 +273,45 @@ export const PlayerProfileForm = ({ onSubmit }) => {
       }
     };
 
-    fetchProfile();
+    fetchProfileData();
   }, [address, isConnected]);
 
-  // Correct the profile creation handler
+  // Update handleCreateProfile function
   const handleCreateProfile = async (data) => {
     try {
-      toast.info("Creating profile...", {
-        position: "top-center",
-      });
-
-      // Call setProfile with correct parameters
-      await setProfile(data.name, data.image);
-
-      // Refresh profile data
-      const profile = await getProfile(address);
+      toast.info("Creating your profile...");
       
-      // Update both profile and balance
+        
+      // Then set profile data
+      await setProfile(data.image, data.name);
+      
+      // Fetch the updated profile
+      const updatedProfile = await getProfile(address);
+      
+      if (!updatedProfile.isInitialized) {
+        throw new Error("Profile initialization failed");
+      }
+
+      // Update states
       setProfileData({
-        username: profile[2],
-        xp: Number(profile[1]),
-        photo: profile[0],
-        tokens: Number(profile[3])
+        username: updatedProfile.name,
+        photo: updatedProfile.profileURI,
+        xp: Number(updatedProfile.xp),
+        isInitialized: true,
+        weaponBalances: updatedProfile.weaponBalances,
+        skinsOwned: updatedProfile.skinsOwned
       });
-      
-      setFormData(prev => ({
-        ...prev,
-        name: profile[2],
-        photo: profile[0],
-        xp: profile[1].toString(),
-        token: profile[3].toString()
-      }));
 
-      // Update balance after profile creation
-      const balance = await getXTokenBalance(address);
-      setUserBalance(formatEther(balance));
-
+      // Close modal and show success
       setShowCreateProfile(false);
       toast.success("Profile created successfully!");
+      
     } catch (error) {
       console.error("Error creating profile:", error);
       toast.error("Failed to create profile. Please try again.");
     }
   };
+
   const [weaponsArray, setWeaponsArray] = useState({
     address: '',
     balances: [0, 0, 0, 0, 0]
@@ -340,24 +337,34 @@ export const PlayerProfileForm = ({ onSubmit }) => {
             address: address,
             balances: weapons.map(count => Number(count))
           });
-
+          
           // Update skins state with proper format
           setSkinsArray({
             address: address,
             owned: skins
           });
 
-          // Update available items
-          const availableGuns = weapons
-            .map((count, index) => ({ count: Number(count), index }))
-            .filter(item => item.count > 0)
-            .map(item => item.index + 1);
+          // Get available guns (index + 1 for each weapon with count > 0)
+          const availableGuns = weapons.reduce((acc, count, index) => {
+            if (Number(count) > 0) {
+              acc.push(index + 1); // Adding index + 1 for each available weapon
+            }
+            return acc;
+          }, []);
+          
+          // Get available colors (index + 1 for each owned skin)
+          const availableColors = skins.reduce((acc, owned, index) => {
+            if (owned === true) {
+              acc.push(index + 1); // Adding index + 1 for each owned skin
+            }
+            return acc;
+          }, []);
 
-          const availableColors = skins
-            .map((owned, index) => ({ owned, index }))
-            .filter(item => item.owned)
-            .map(item => item.index + 1);
-
+          console.log('Available Items:', {
+            guns: availableGuns,  // Shows array of indices + 1 for available weapons
+            colors: availableColors  // Shows array of indices + 1 for owned skins
+          });
+          
           setPlayerGuns(availableGuns);
           setPlayerColors(availableColors);
 
@@ -371,6 +378,9 @@ export const PlayerProfileForm = ({ onSubmit }) => {
     fetchWeaponsAndSkins();
   }, [address, isConnected]);
 
+  // Add state for shop visibility at the top of PlayerProfileForm
+  const [isShopOpen, setIsShopOpen] = useState(false);
+
   return (
     <>
       <div className="h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat relative">
@@ -379,11 +389,21 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           className="absolute left-1/2 bottom-1/2 transform -translate-x-1/2 mb-[5vh]"
           width={"700px"}
         />
-        <div className="absolute right-4 top-4 z-10 border border-yellow-400 rounded-lg p-2">
-          <p className=" space-x-2 text-lg font-semibold text-yellow-300">
-            <DollarOutlined className="text-xl" />
-            <span>{userBalance}</span>
-          </p>
+        <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+          <div className="border border-yellow-400 rounded-lg p-2">
+            <p className="space-x-2 text-lg font-semibold text-yellow-300">
+              <DollarOutlined className="text-xl" />
+              <span>{userBalance}</span>
+            </p>
+          </div>
+          <button
+            onClick={() => setIsShopOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg
+              shadow-lg transition-all duration-200 font-semibold flex items-center gap-2"
+          >
+            <ShoppingOutlined className="text-xl" />
+            Shop
+          </button>
         </div>
         <div className="absolute left-4 top-4 z-10">
           {!isConnected ? (
@@ -460,7 +480,7 @@ export const PlayerProfileForm = ({ onSubmit }) => {
                         style={{ width: `${(profileData?.xp || Number(formData.xp)) % 100}%` }}
                       />
                     </div>
-                    <div className="text-xs font-bold">{userBalance} XTK</div>
+                    <div className="text-xs font-bold">{profileData?.xp%100}/100</div>
                   </div>
                 </div>
               </div>
@@ -579,107 +599,27 @@ export const PlayerProfileForm = ({ onSubmit }) => {
           )}
         </div>
       </div>
-      {/* Edit Form (shown only in edit mode) */}
-      {editMode && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-blue-800 to-blue-600 p-8 rounded-2xl w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              Edit Profile
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Weapon</label>
-                <input
-                  name="weapon"
-                  value={formData.weapon}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Color</label>
-                <input
-                  name="color"
-                  value={formData.color}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Photo URL
-                </label>
-                <input
-                  name="photo"
-                  value={formData.photo}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">XP</label>
-                <input
-                  name="xp"
-                  value={formData.xp}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Token</label>
-                <input
-                  name="token"
-                  value={formData.token}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Room Code
-                </label>
-                <input
-                  name="roomCode"
-                  value={formData.roomCode}
-                  onChange={handleChange}
-                  className="w-full bg-black bg-opacity-30 p-3 rounded-lg"
-                />
-              </div>
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg font-medium transition-all"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditMode(false)}
-                  className="flex-1 bg-red-500 hover:bg-red-600 py-3 rounded-lg font-medium transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {showCreateProfile && (
+      {(showCreateProfile || !profileData?.username) && isConnected && (
         <CreateProfileModal
           onSubmit={handleCreateProfile}
           onCancel={() => {
             disconnect();
             setShowCreateProfile(false);
           }}
+        />
+      )}
+      {isShopOpen && (
+        <Shop
+          onClose={() => setIsShopOpen(false)}
+          balance={userBalance}
+          updateBalance={async () => {
+            if (address && isConnected) {
+              const balance = await getXTokenBalance(address);
+              setUserBalance(formatBalance(formatEther(balance)));
+            }
+          }}
+          playerWeapons={weaponsArray.balances}
+          playerSkins={skinsArray.owned}
         />
       )}
     </>

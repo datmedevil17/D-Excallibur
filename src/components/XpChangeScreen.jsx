@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DollarOutlined } from "@ant-design/icons";
+import { mintXToken, updateXp } from "../contracts/function";
+import { useAccount } from "wagmi";
 
 const RANKS = ["private", "corporal", "sergeant", "major"];
 const XP_PHASE_DURATION = 1000;
@@ -24,6 +26,7 @@ export const XpChangeScreen = ({ kill, death, xp, token, onBack }) => {
   const [displayRank, setDisplayRank] = useState(RANKS[initialRankIdx]);
   const [bar, setBar] = useState(oldProg);
   const [displayedTokens, setDisplayedTokens] = useState(oldTokens);
+  const account = useAccount()
 
   useEffect(() => {
     if (wrapCount > 0) {
@@ -72,6 +75,19 @@ export const XpChangeScreen = ({ kill, death, xp, token, onBack }) => {
 
     return () => clearInterval(iv);
   }, []);
+  useEffect(()=>{
+    updateXp(totalXP).then((res) => {
+      console.log("XP updated successfully", res);
+    }).catch((err) => {
+      console.error("Error updating XP", err);
+    });
+    mintXToken(account.address,Math.max(deltaXP, 0)*10**18).then((res) => {
+      console.log("Tokens minted successfully", res);
+    }).catch((err) => {
+      console.error("Error minting tokens", err);
+    })
+
+  },[])
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
