@@ -125,8 +125,8 @@ export const PlayerProfileForm = ({ onSubmit }) => {
   const [colorId, setColorId] = useState(1);
   const [isEdit, setIsEdit] = useState(false);
   const [gunId, setGunId] = useState(1);
-  const [playerColors, setPlayerColors] = useState([1,3,4]);
-  const [playerGuns, setPlayerGuns] = useState([1, 3, 4]);
+  const [playerColors, setPlayerColors] = useState([]);
+  const [playerGuns, setPlayerGuns] = useState([]);
   const [formData, setFormData] = useState({
     name: "Player 1",
     address: "temp",
